@@ -171,24 +171,14 @@ export default function OrderSidebar({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            onClick={onScan}
-            variant="outline"
-            className="h-14 text-sm font-inter font-bold gap-2 border-primary/30 text-primary hover:bg-primary/10"
-            disabled={cartItems.length === 0}
-          >
-            <ScanBarcode className="w-5 h-5" />
-            Bipar
-          </Button>
-          <Button
-            onClick={onFinalize}
-            className="h-14 text-sm font-inter font-bold gap-2 bg-primary hover:bg-primary/90"
-            disabled={cartItems.length === 0}
-          >
-            Finalizar
-          </Button>
-        </div>
+        <Button
+          onClick={onFinalize}
+          className="w-full h-16 text-base font-inter font-extrabold gap-3 bg-primary hover:bg-primary/90 rounded-2xl shadow-lg shadow-primary/30 active:scale-[0.98] transition-all"
+          disabled={cartItems.length === 0}
+        >
+          <ScanBarcode className="w-6 h-6" />
+          Fazer Pedido
+        </Button>
       </div>
     </div>
   );

@@ -88,7 +88,11 @@ export default function Home() {
     setCartItems([]);
   }, []);
 
-  const finalizeOrder = async () => {
+  const finalizeOrder = () => {
+    setShowScan(true);
+  };
+
+  const confirmOrder = async () => {
     const newOrderNumber = orderCounter + 1;
     setOrderCounter(newOrderNumber);
 
@@ -118,7 +122,7 @@ export default function Home() {
 
   const handleScanConfirm = async () => {
     setShowScan(false);
-    await finalizeOrder();
+    await confirmOrder();
   };
 
   if (loading) {

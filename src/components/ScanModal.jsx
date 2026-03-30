@@ -75,7 +75,7 @@ export default function ScanModal({ open, onClose, onConfirm, orderNumber }) {
                 </div>
                 <div>
                   <h3 className="font-inter font-bold text-xl text-foreground">
-                    Bipar Comanda
+                    Leia sua Comanda
                   </h3>
                   <p className="font-inter text-sm text-muted-foreground mt-2">
                     Aproxime o leitor de código de barras ou toque no botão abaixo para simular
