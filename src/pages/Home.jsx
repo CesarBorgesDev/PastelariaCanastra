@@ -9,6 +9,7 @@ import ScanModal from "../components/ScanModal";
 import PrintPreview from "../components/PrintPreview";
 import MobileCartButton from "../components/MobileCartButton";
 import BottomBar from "../components/BottomBar";
+import OrderConfirmModal from "../components/OrderConfirmModal";
 
 export default function Home() {
   const { toast } = useToast();
@@ -17,6 +18,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [cartItems, setCartItems] = useState([]);
   const [showScan, setShowScan] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [showPrint, setShowPrint] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -90,6 +92,12 @@ export default function Home() {
   }, []);
 
   const finalizeOrder = () => {
+    if (cartItems.length === 0) return;
+    setShowConfirm(true);
+  };
+
+  const handleConfirmProceed = () => {
+    setShowConfirm(false);
     setShowScan(true);
   };
 
@@ -189,6 +197,14 @@ export default function Home() {
       />
 
       <BottomBar cartItems={cartItems} total={total} onFinalize={finalizeOrder} />
+
+      <OrderConfirmModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmProceed}
+        cartItems={cartItems}
+        total={total}
+      />
 
       {/* Print Preview */}
       <PrintPreview
