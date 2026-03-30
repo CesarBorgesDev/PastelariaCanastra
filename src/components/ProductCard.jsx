@@ -1,9 +1,14 @@
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ProductCard({ product, onAdd, itemCount }) {
-  const handleAdd = () => {
+export default function ProductCard({ product, onAdd, onRemove, itemCount }) {
+  const handleAdd = (e) => {
+    e.stopPropagation();
     onAdd(product);
+  };
+  const handleRemove = (e) => {
+    e.stopPropagation();
+    if (onRemove) onRemove(product.id);
   };
 
   return (
@@ -53,8 +58,15 @@ export default function ProductCard({ product, onAdd, itemCount }) {
           <span className="font-inter font-extrabold text-primary text-lg">
             R$ {product.price?.toFixed(2)}
           </span>
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-            <Plus className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-1">
+            {itemCount > 0 && (
+              <button onClick={handleRemove} className="w-8 h-8 rounded-full bg-secondary border border-border flex items-center justify-center active:scale-90 transition-transform">
+                <Minus className="w-4 h-4 text-foreground" />
+              </button>
+            )}
+            <button onClick={handleAdd} className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors active:scale-90">
+              <Plus className="w-4 h-4 text-primary" />
+            </button>
           </div>
         </div>
       </div>

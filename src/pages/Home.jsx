@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
@@ -13,6 +14,7 @@ import OrderConfirmModal from "../components/OrderConfirmModal";
 
 export default function Home() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -93,7 +95,7 @@ export default function Home() {
 
   const finalizeOrder = () => {
     if (cartItems.length === 0) return;
-    setShowConfirm(true);
+    navigate("/order-confirm", { state: { cartItems } });
   };
 
   const handleConfirmProceed = () => {
@@ -151,7 +153,7 @@ export default function Home() {
         itemCount={itemCount}
         total={total}
         onOpenCart={() => setSidebarOpen(true)}
-        onOrder={() => setShowScan(true)}
+        onOrder={finalizeOrder}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -165,6 +167,7 @@ export default function Home() {
             <ProductGrid
               products={filteredProducts}
               onAddItem={addItem}
+              onRemoveItem={decrement}
               cartItems={cartItems}
             />
           </div>

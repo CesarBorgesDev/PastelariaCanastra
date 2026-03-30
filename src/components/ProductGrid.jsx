@@ -1,6 +1,6 @@
 import ProductCard from "./ProductCard";
 
-export default function ProductGrid({ products, onAddItem, cartItems }) {
+export default function ProductGrid({ products, onAddItem, onRemoveItem, cartItems }) {
   const getItemCount = (productId) => {
     const item = cartItems.find((i) => i.product.id === productId);
     return item ? item.quantity : 0;
@@ -22,6 +22,7 @@ export default function ProductGrid({ products, onAddItem, cartItems }) {
             key={product.id}
             product={product}
             onAdd={onAddItem}
+            onRemove={onRemoveItem}
             itemCount={getItemCount(product.id)}
           />
         ))}
