@@ -49,7 +49,7 @@ export default function Header({ itemCount = 0, total = 0, onOpenCart, onOrder }
               className="flex items-center gap-2 bg-primary text-primary-foreground rounded-xl px-4 py-2 shadow-lg shadow-primary/30 active:scale-95 transition-transform"
             >
               <ScanBarcode className="w-4 h-4" />
-              <span className="font-inter font-bold text-sm">R$ {total.toFixed(2)}</span>
+              <span className="font-inter font-bold text-sm">Fazer Pedido</span>
             </button>
           </div>
         )}
