@@ -138,7 +138,12 @@ export default function Home() {
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden">
-      <Header />
+      <Header
+        itemCount={itemCount}
+        total={total}
+        onOpenCart={() => setSidebarOpen(true)}
+        onOrder={() => setShowScan(true)}
+      />
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main content */}
@@ -172,13 +177,7 @@ export default function Home() {
         />
       </div>
 
-      {/* Mobile cart button */}
-      <MobileCartButton
-        itemCount={itemCount}
-        total={total}
-        onOpenCart={() => setSidebarOpen(true)}
-        onOrder={() => setShowScan(true)}
-      />
+
 
       {/* Scan Modal */}
       <ScanModal
