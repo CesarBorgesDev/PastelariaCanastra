@@ -174,7 +174,8 @@ export default function Home() {
       <MobileCartButton
         itemCount={itemCount}
         total={total}
-        onClick={() => setSidebarOpen(true)}
+        onOpenCart={() => setSidebarOpen(true)}
+        onOrder={() => setShowScan(true)}
       />
 
       {/* Scan Modal */}
