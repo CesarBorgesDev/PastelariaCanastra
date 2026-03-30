@@ -1,0 +1,60 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "number",
+      "title": "N\u00famero do Pedido"
+    },
+    "items": {
+      "type": "array",
+      "title": "Itens",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "total": {
+      "type": "number",
+      "title": "Total"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "pendente",
+        "preparando",
+        "pronto",
+        "entregue"
+      ],
+      "default": "pendente"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Observa\u00e7\u00f5es Gerais"
+    },
+    "barcode": {
+      "type": "string",
+      "title": "C\u00f3digo de Barras"
+    }
+  },
+  "required": [
+    "order_number",
+    "items",
+    "total",
+    "status"
+  ]
+}
