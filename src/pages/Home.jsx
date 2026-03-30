@@ -147,11 +147,13 @@ export default function Home() {
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
-          <ProductGrid
-            products={filteredProducts}
-            onAddItem={addItem}
-            cartItems={cartItems}
-          />
+          <div className="flex-1 overflow-hidden pb-24 lg:pb-0">
+            <ProductGrid
+              products={filteredProducts}
+              onAddItem={addItem}
+              cartItems={cartItems}
+            />
+          </div>
         </div>
 
         {/* Sidebar */}

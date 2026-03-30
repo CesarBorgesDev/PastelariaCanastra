@@ -4,7 +4,7 @@ export default function MobileCartButton({ itemCount, total, onOpenCart, onOrder
   if (itemCount === 0) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 lg:hidden z-40 flex gap-3">
+    <div className="fixed bottom-6 left-4 right-4 lg:hidden z-40 flex gap-3 drop-shadow-2xl">
       <button
         onClick={onOpenCart}
         className="flex items-center gap-2 bg-secondary border border-border text-foreground rounded-2xl px-4 py-4 shadow-xl active:scale-[0.98] transition-transform"
