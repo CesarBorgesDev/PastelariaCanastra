@@ -8,6 +8,7 @@ import OrderSidebar from "../components/OrderSidebar";
 import ScanModal from "../components/ScanModal";
 import PrintPreview from "../components/PrintPreview";
 import MobileCartButton from "../components/MobileCartButton";
+import BottomBar from "../components/BottomBar";
 
 export default function Home() {
   const { toast } = useToast();
@@ -186,6 +187,8 @@ export default function Home() {
         onConfirm={handleScanConfirm}
         orderNumber={orderCounter + 1}
       />
+
+      <BottomBar cartItems={cartItems} total={total} onFinalize={finalizeOrder} />
 
       {/* Print Preview */}
       <PrintPreview
