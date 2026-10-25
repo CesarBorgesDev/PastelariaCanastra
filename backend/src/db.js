@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { upsertProducts } from './catalog.js';
 import { canonicalCategory, repairText } from './text.js';
 
 const { Pool } = pg;
@@ -53,6 +54,16 @@ export async function initDb() {
   }
 
   await repairProductText();
+  await importRepositoryProducts();
+}
+
+async function importRepositoryProducts() {
+  const productsFile = process.env.PRODUCTS_FILE || '/app/data/products.json';
+  if (!fs.existsSync(productsFile)) return;
+
+  const products = JSON.parse(fs.readFileSync(productsFile, 'utf8'));
+  const result = await upsertProducts(pool, products);
+  console.log(`Produtos do repositório: ${result.updated} atualizados, ${result.created} criados.`);
 }
 
 export async function repairProductText() {
