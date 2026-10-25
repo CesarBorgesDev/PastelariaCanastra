@@ -1,5 +1,6 @@
 import fs from 'node:fs';
-import { pool } from './db.js';
+import { pool, repairProductText } from './db.js';
+import { canonicalCategory, repairText } from './text.js';
 
 const raw = fs.readFileSync(0, 'utf8').trim();
 if (!raw) {
@@ -19,10 +20,11 @@ let updated = 0;
 let created = 0;
 
 try {
+  await repairProductText();
   await client.query('BEGIN');
   for (const product of products) {
-    const name = String(product.name || '').trim();
-    const category = String(product.category || '').trim();
+    const name = repairText(product.name).trim();
+    const category = canonicalCategory(product.category);
     const price = Number(product.price);
     if (!name || !category || !Number.isFinite(price) || price < 0) {
       throw new Error(`Produto inválido: ${name || '(sem nome)'}`);
@@ -38,7 +40,7 @@ try {
 
     const values = [
       name,
-      String(product.description || ''),
+      repairText(product.description),
       price,
       category,
       imageUrl,

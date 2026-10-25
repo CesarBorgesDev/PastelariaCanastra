@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { canonicalCategory, repairText } from './text.js';
 
 const { Pool } = pg;
 
@@ -49,5 +50,21 @@ export async function initDb() {
         [name, description, price, category],
       );
     }
+  }
+
+  await repairProductText();
+}
+
+export async function repairProductText() {
+  const { rows } = await pool.query('SELECT id, name, description, category FROM products');
+  for (const row of rows) {
+    const name = repairText(row.name);
+    const description = repairText(row.description);
+    const category = canonicalCategory(row.category);
+    if (name === row.name && description === row.description && category === row.category) continue;
+    await pool.query(
+      'UPDATE products SET name = $2, description = $3, category = $4 WHERE id = $1',
+      [row.id, name, description, category],
+    );
   }
 }

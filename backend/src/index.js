@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { initDb, pool } from './db.js';
+import { canonicalCategory, repairText } from './text.js';
 
 const CATEGORIES = ['Pastéis Salgados', 'Pastéis Doces', 'Bebidas', 'Adicionais'];
 const PORT = Number(process.env.PORT || 3000);
@@ -27,10 +28,10 @@ app.use((req, res, next) => {
 function mapProduct(row) {
   return {
     id: row.id,
-    name: row.name,
-    description: row.description,
+    name: repairText(row.name),
+    description: repairText(row.description),
     price: Number(row.price),
-    category: row.category,
+    category: canonicalCategory(row.category),
     image_url: row.image_url,
     available: row.available,
     created_date: row.created_at,
