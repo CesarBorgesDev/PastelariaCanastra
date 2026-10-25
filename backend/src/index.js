@@ -1,10 +1,16 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { initDb, pool } from './db.js';
 
 const CATEGORIES = ['Pastéis Salgados', 'Pastéis Doces', 'Bebidas', 'Adicionais'];
 const PORT = Number(process.env.PORT || 3000);
 
+const uploadsDir = process.env.UPLOADS_DIR
+  || path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'uploads');
+
 const app = express();
+app.use('/uploads', express.static(uploadsDir));
 app.use(express.json());
 
 app.use((req, res, next) => {
