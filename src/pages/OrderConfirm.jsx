@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ScanBarcode, ArrowLeft, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { useToast } from "@/components/ui/use-toast";
 import ScanModal from "../components/ScanModal";
 import PrintPreview from "../components/PrintPreview";
@@ -46,7 +46,7 @@ export default function OrderConfirm() {
       status: "pendente",
       barcode: `CMD-${newOrderNumber}-${Date.now().toString().slice(-6)}`,
     };
-    const created = await base44.entities.Order.create(orderData);
+    const created = await api.orders.create(orderData);
     setLastOrder({ ...orderData, id: created.id });
     setShowPrint(true);
     toast({ title: `Pedido #${newOrderNumber} criado!`, description: `Total: R$ ${total.toFixed(2)}` });

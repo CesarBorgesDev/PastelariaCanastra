@@ -1,0 +1,53 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+
+const { Pool } = pg;
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL não definida');
+}
+
+export const pool = new Pool({ connectionString });
+
+const schemaPath = path.join(path.dirname(fileURLToPath(import.meta.url)), 'schema.sql');
+
+const SEED = [
+  ['Pastel de Carne', 'Carne moída temperada', 12, 'Pastéis Salgados'],
+  ['Pastel de Queijo', 'Mussarela derretida', 12, 'Pastéis Salgados'],
+  ['Pastel de Frango', 'Frango desfiado com catupiry', 14, 'Pastéis Salgados'],
+  ['Pastel de Pizza', 'Mussarela, presunto e orégano', 14, 'Pastéis Salgados'],
+  ['Pastel de Chocolate', 'Chocolate ao leite', 11, 'Pastéis Doces'],
+  ['Pastel de Banana', 'Banana com canela', 11, 'Pastéis Doces'],
+  ['Refrigerante lata', '350 ml', 6, 'Bebidas'],
+  ['Suco natural', '300 ml', 8, 'Bebidas'],
+  ['Catupiry extra', 'Porção adicional', 3, 'Adicionais'],
+];
+
+export async function initDb() {
+  for (let attempt = 1; attempt <= 30; attempt += 1) {
+    try {
+      await pool.query('SELECT 1');
+      break;
+    } catch (error) {
+      if (attempt === 30) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
+  const schema = fs.readFileSync(schemaPath, 'utf8');
+  await pool.query(schema);
+
+  const { rows } = await pool.query('SELECT COUNT(*)::int AS count FROM products');
+  if (rows[0].count === 0) {
+    for (const [name, description, price, category] of SEED) {
+      await pool.query(
+        `INSERT INTO products (name, description, price, category)
+         VALUES ($1, $2, $3, $4)`,
+        [name, description, price, category],
+      );
+    }
+  }
+}

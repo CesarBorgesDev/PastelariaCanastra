@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import CategoryTabs from "../components/CategoryTabs";
@@ -30,9 +30,15 @@ export default function Home() {
 
   useEffect(() => {
     const loadProducts = async () => {
-      const data = await base44.entities.Product.filter({ available: true });
-      setProducts(data);
-      setLoading(false);
+      try {
+        const data = await api.products.listAvailable();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
     };
     loadProducts();
   }, []);
@@ -120,7 +126,7 @@ export default function Home() {
       barcode: `CMD-${newOrderNumber}-${Date.now().toString().slice(-6)}`,
     };
 
-    const created = await base44.entities.Order.create(orderData);
+    const created = await api.orders.create(orderData);
     setLastOrder({ ...orderData, id: created.id });
     setShowPrint(true);
     setCartItems([]);

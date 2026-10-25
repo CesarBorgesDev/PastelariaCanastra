@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,9 +42,15 @@ export default function Admin() {
 
   const loadProducts = async () => {
     setLoading(true);
-    const data = await base44.entities.Product.list("-created_date");
-    setProducts(data);
-    setLoading(false);
+    try {
+      const data = await api.products.list();
+      setProducts(data);
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Não foi possível carregar os produtos.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -81,10 +87,10 @@ export default function Admin() {
       price: parseFloat(form.price),
     };
     if (editingId) {
-      await base44.entities.Product.update(editingId, payload);
+      await api.products.update(editingId, payload);
       toast({ title: "Produto atualizado!" });
     } else {
-      await base44.entities.Product.create(payload);
+      await api.products.create(payload);
       toast({ title: "Produto criado!" });
     }
     setSaving(false);
@@ -94,13 +100,13 @@ export default function Admin() {
 
   const handleDelete = async (id) => {
     if (!confirm("Remover este produto?")) return;
-    await base44.entities.Product.delete(id);
+    await api.products.remove(id);
     toast({ title: "Produto removido." });
     loadProducts();
   };
 
   const handleToggleAvailable = async (product) => {
-    await base44.entities.Product.update(product.id, { available: !product.available });
+    await api.products.update(product.id, { available: !product.available });
     loadProducts();
   };
 
