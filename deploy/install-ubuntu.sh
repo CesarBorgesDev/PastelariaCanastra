@@ -7,7 +7,7 @@
 #   nano deploy/vps.env
 #   sudo bash deploy/install-ubuntu.sh
 #
-# Depois de cada git pull, rode o script de novo para rebuildar.
+# Para atualizar o código depois, use: sudo bash deploy/update.sh
 
 set -euo pipefail
 
@@ -35,8 +35,22 @@ export ENABLE_UFW="${ENABLE_UFW:-false}"
 export DEBIAN_FRONTEND=noninteractive
 
 echo "==> Docker"
-apt-get update
-apt-get install -y ca-certificates curl docker.io docker-compose-v2
+if docker compose version >/dev/null 2>&1; then
+  echo "Docker Compose já instalado: $(docker compose version)"
+else
+  apt-get update
+  apt-get install -y ca-certificates curl
+  if ! command -v docker >/dev/null 2>&1; then
+    apt-get install -y docker.io
+  fi
+  # O pacote docker-compose-plugin (repositório oficial do Docker) ocupa o mesmo
+  # arquivo que docker-compose-v2. Não instale os dois.
+  if dpkg -s docker-compose-plugin >/dev/null 2>&1; then
+    echo "O pacote docker-compose-plugin já fornece o comando docker compose." >&2
+    exit 1
+  fi
+  apt-get install -y docker-compose-v2
+fi
 systemctl enable --now docker
 
 echo "==> Containers"
