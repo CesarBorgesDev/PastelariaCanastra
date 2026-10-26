@@ -308,7 +308,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.78,
+        childAspectRatio: 0.72,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
@@ -328,13 +328,11 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Stack(
+                Expanded(
+                  child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    SizedBox(
-                      height: 108,
-                      width: double.infinity,
-                      child: _productIcon(product),
-                    ),
+                    _productIcon(product),
                     if (quantity > 0)
                       Positioned(
                         top: 8,
@@ -354,6 +352,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                   ],
+                ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -376,16 +375,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  static const _productPhotos = {
+    'pastel de carne': 'assets/products/pastel-carne.jpg',
+    'pastel de queijo': 'assets/products/pastel-queijo.jpg',
+    'pastel de frango': 'assets/products/pastel-frango.jpg',
+    'pastel de pizza': 'assets/products/pastel-pizza.jpg',
+    'pastel de chocolate': 'assets/products/pastel-chocolate.jpg',
+    'pastel de banana': 'assets/products/pastel-banana.jpg',
+    'refrigerante lata': 'assets/products/refrigerante.jpg',
+    'suco natural': 'assets/products/suco.jpg',
+    'catupiry extra': 'assets/products/catupiry.jpg',
+  };
+
   Widget _productIcon(Product product) {
+    final asset = _productPhotos[_fold(product.name)];
     final url = _imageUrl(product);
     if (url != null) {
       return Image.network(
         url,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _emojiIcon(product),
+        errorBuilder: (_, __, ___) => asset == null ? _emojiIcon(product) : Image.asset(asset, fit: BoxFit.cover),
       );
     }
+    if (asset != null) return Image.asset(asset, fit: BoxFit.cover);
     return _emojiIcon(product);
+  }
+
+  String _fold(String value) {
+    const from = 'áàâãäéèêëíìîïóòôõöúùûüç';
+    const to = 'aaaaaeeeeiiiiooooouuuuc';
+    final lower = value.toLowerCase().trim();
+    final buffer = StringBuffer();
+    for (final rune in lower.runes) {
+      final char = String.fromCharCode(rune);
+      final index = from.indexOf(char);
+      buffer.write(index >= 0 ? to[index] : char);
+    }
+    return buffer.toString();
   }
 
   Widget _emojiIcon(Product product) {
