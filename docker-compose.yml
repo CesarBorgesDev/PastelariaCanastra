@@ -20,7 +20,7 @@ services:
     build: ./backend
     container_name: pastelaria-backend
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER:-pastelaria}:${POSTGRES_PASSWORD:-pastelaria}@pastelaria-db:5432/${POSTGRES_DB:-pastelaria}
+      DATABASE_URL: postgres://${POSTGRES_USER:-pastelaria}:${POSTGRES_PASSWORD_URL:-pastelaria}@pastelaria-db:5432/${POSTGRES_DB:-pastelaria}
       PORT: 3000
       UPLOADS_DIR: /app/uploads
       PRODUCTS_FILE: /app/data/products.json

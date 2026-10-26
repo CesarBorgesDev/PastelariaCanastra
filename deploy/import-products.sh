@@ -10,7 +10,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
-ENV_FILE="${SCRIPT_DIR}/vps.env"
 PRODUCTS_FILE="${REPO_DIR}/data/products.json"
 
 if [[ ! -f "${PRODUCTS_FILE}" ]]; then
@@ -24,23 +23,37 @@ if ! docker compose version >/dev/null 2>&1; then
   exit 1
 fi
 
-if [[ -f "${ENV_FILE}" ]]; then
-  # shellcheck disable=SC1090
-  set -a
-  source "${ENV_FILE}"
-  set +a
-fi
-
-export WEB_PORT="${WEB_PORT:-80}"
-export POSTGRES_USER="${POSTGRES_USER:-pastelaria}"
-export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-pastelaria}"
-export POSTGRES_DB="${POSTGRES_DB:-pastelaria}"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/env.sh"
+load_pastelaria_env "${SCRIPT_DIR}" "${REPO_DIR}"
 
 cd "${REPO_DIR}"
 
-echo "==> Garantindo containers no ar"
-docker compose up -d pastelaria-db pastelaria-backend
+echo "==> Banco de dados"
+docker compose up -d --wait pastelaria-db
+
+# O volume guarda a senha da primeira criação. A conexão local do
+# container não exige senha, então ela passa a ser a do deploy/vps.env.
+echo "==> Alinhando a senha do usuário ${POSTGRES_USER}"
+docker compose cp deploy/sync-db-password.sh pastelaria-db:/tmp/sync-db-password.sh
+docker compose exec -T \
+  -e POSTGRES_USER \
+  -e POSTGRES_PASSWORD \
+  -e POSTGRES_DB \
+  pastelaria-db \
+  sh /tmp/sync-db-password.sh
+
+DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD_URL}@pastelaria-db:5432/${POSTGRES_DB}"
+export DATABASE_URL
+
+echo "==> Backend"
+docker compose up -d --wait --force-recreate --no-deps pastelaria-backend
 docker compose cp backend/src/import-products.js pastelaria-backend:/app/src/import-products.js
+docker compose cp backend/src/catalog.js pastelaria-backend:/app/src/catalog.js
+docker compose cp backend/src/db.js pastelaria-backend:/app/src/db.js
+docker compose cp backend/src/text.js pastelaria-backend:/app/src/text.js
 
 echo "==> Importando produtos"
-docker compose exec -T pastelaria-backend node src/import-products.js < "${PRODUCTS_FILE}"
+docker compose exec -T -e DATABASE_URL="${DATABASE_URL}" \
+  pastelaria-backend \
+  node src/import-products.js < "${PRODUCTS_FILE}"

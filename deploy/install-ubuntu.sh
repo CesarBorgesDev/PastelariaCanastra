@@ -20,17 +20,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${SCRIPT_DIR}/vps.env"
 
-if [[ -f "${ENV_FILE}" ]]; then
-  # shellcheck disable=SC1090
-  set -a
-  source "${ENV_FILE}"
-  set +a
-fi
-
-export WEB_PORT="${WEB_PORT:-80}"
-export POSTGRES_USER="${POSTGRES_USER:-pastelaria}"
-export POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-pastelaria}"
-export POSTGRES_DB="${POSTGRES_DB:-pastelaria}"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/env.sh"
+load_pastelaria_env "${SCRIPT_DIR}" "${REPO_DIR}"
 export ENABLE_UFW="${ENABLE_UFW:-false}"
 export DEBIAN_FRONTEND=noninteractive
 
