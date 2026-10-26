@@ -41,8 +41,25 @@ class _PastelariaAppState extends State<PastelariaApp> {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF121212),
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFE86A24),
-          surface: Color(0xFF1C1C1C),
+          primary: Color(0xFFE8591C),
+          onPrimary: Color(0xFFFFFFFF),
+          secondary: Color(0xFF262626),
+          onSecondary: Color(0xFFF2F2F2),
+          secondaryContainer: Color(0xFFE8591C),
+          onSecondaryContainer: Color(0xFFFFFFFF),
+          surface: Color(0xFF1A1A1A),
+          onSurface: Color(0xFFF2F2F2),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: const Color(0xFF262626),
+          selectedColor: const Color(0xFFE8591C),
+          disabledColor: const Color(0xFF262626),
+          labelStyle: const TextStyle(color: Color(0xFF8C8C8C), fontWeight: FontWeight.w600, fontSize: 14),
+          secondaryLabelStyle: const TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.w600, fontSize: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide.none,
+          showCheckmark: false,
         ),
         useMaterial3: true,
       ),
@@ -69,7 +86,6 @@ class _HomePageState extends State<HomePage> {
   String _category = 'Todos';
   bool _loading = true;
   String? _error;
-  int _orderSeed = 100;
 
   static const _categories = ['Todos', 'Pastéis Salgados', 'Pastéis Doces', 'Bebidas', 'Adicionais'];
 
@@ -139,12 +155,57 @@ class _HomePageState extends State<HomePage> {
     if (saved == true) await widget.onSettingsSaved();
   }
 
+  int _quantityOf(Product product) {
+    final index = _cart.indexWhere((item) => item.product.id == product.id);
+    if (index < 0) return 0;
+    return _cart[index].quantity;
+  }
+
+  Future<int?> _askComanda() {
+    final controller = TextEditingController();
+    return showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Fazer pedido'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Número da comanda',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
+            FilledButton(
+              onPressed: () {
+                final number = int.tryParse(controller.text.trim());
+                if (number == null || number <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Informe o número da comanda.')),
+                  );
+                  return;
+                }
+                Navigator.of(context).pop(number);
+              },
+              child: const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    ).whenComplete(controller.dispose);
+  }
+
   Future<void> _finish() async {
     if (_cart.isEmpty) return;
     if (!widget.settings.hasPrinter) {
       _message('Informe o IP da impressora Control iD.');
       return;
     }
+    final number = await _askComanda();
+    if (number == null || !mounted) return;
     final items = _cart
         .map((item) => OrderItem(
               productName: item.product.name,
@@ -153,7 +214,6 @@ class _HomePageState extends State<HomePage> {
               notes: item.notes,
             ))
         .toList();
-    final number = _orderSeed + 1;
     final order = Order(
       orderNumber: number,
       items: items,
@@ -169,13 +229,14 @@ class _HomePageState extends State<HomePage> {
         total: order.total,
         barcode: order.barcode,
       );
-      await ControlIdPrinter(ip: widget.settings.printerIp, port: widget.settings.printerPort).printOrder(saved);
+      await ControlIdPrinter(
+        ip: widget.settings.printerIp,
+        port: widget.settings.printerPort,
+        fontSize: widget.settings.printFontSize.toDouble(),
+      ).printOrder(saved);
       if (!mounted) return;
-      setState(() {
-        _orderSeed = number;
-        _cart.clear();
-      });
-      _message('Pedido #$number impresso.');
+      setState(_cart.clear);
+      _message('Comanda $number impressa.');
     } catch (error) {
       _message('$error');
     }
@@ -213,6 +274,16 @@ class _HomePageState extends State<HomePage> {
                               ? 'Doces'
                               : category),
                       selected: _category == category,
+                      showCheckmark: false,
+                      selectedColor: const Color(0xFFE8591C),
+                      backgroundColor: const Color(0xFF262626),
+                      labelStyle: TextStyle(
+                        color: _category == category ? const Color(0xFFFFFFFF) : const Color(0xFF8C8C8C),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       onSelected: (_) => setState(() => _category = category),
                     ),
                   ),
@@ -237,31 +308,67 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 1.15,
+        childAspectRatio: 0.78,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
+        final quantity = _quantityOf(product);
         return Material(
-          color: const Color(0xFF1C1C1C),
-          borderRadius: BorderRadius.circular(16),
-          child: InkWell(
+          color: const Color(0xFF1A1A1A),
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: quantity > 0 ? const Color(0xFFE8591C) : const Color(0xFF2E2E2E)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
             onTap: () => _add(product),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product.name, maxLines: 2, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  Text(product.description, maxLines: 2, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                  const Spacer(),
-                  Text('R\$ ${product.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFE86A24), fontWeight: FontWeight.w800)),
-                ],
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    SizedBox(
+                      height: 108,
+                      width: double.infinity,
+                      child: _productIcon(product),
+                    ),
+                    if (quantity > 0)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE8591C),
+                            shape: BoxShape.circle,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            '$quantity',
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(product.name, maxLines: 2, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 4),
+                      Text(product.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 12)),
+                      const SizedBox(height: 8),
+                      Text('R\$ ${product.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFE8591C), fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -269,9 +376,45 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _productIcon(Product product) {
+    final url = _imageUrl(product);
+    if (url != null) {
+      return Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _emojiIcon(product),
+      );
+    }
+    return _emojiIcon(product);
+  }
+
+  Widget _emojiIcon(Product product) {
+    return ColoredBox(
+      color: const Color(0xFF262626),
+      child: Center(child: Text(_emoji(product.category), style: const TextStyle(fontSize: 40))),
+    );
+  }
+
+  String? _imageUrl(Product product) {
+    final raw = product.imageUrl.trim();
+    if (raw.isEmpty) return null;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    final root = widget.settings.backendUrl.trim().replaceAll(RegExp(r'/+$'), '');
+    if (raw.startsWith('/')) return '$root$raw';
+    return '$root/$raw';
+  }
+
+  String _emoji(String category) {
+    if (category == 'Pastéis Salgados') return '🥟';
+    if (category == 'Pastéis Doces') return '🍫';
+    if (category == 'Bebidas') return '🥤';
+    if (category == 'Adicionais') return '➕';
+    return '🍽️';
+  }
+
   Widget _cartBar() {
     return Material(
-      color: const Color(0xFF1C1C1C),
+      color: const Color(0xFF1A1A1A),
       child: SafeArea(
         top: false,
         child: Padding(
@@ -283,7 +426,7 @@ class _HomePageState extends State<HomePage> {
               ),
               FilledButton(
                 onPressed: _cart.isEmpty ? null : _finish,
-                child: const Text('Imprimir pedido'),
+                child: const Text('Fazer pedido'),
               ),
             ],
           ),
@@ -306,6 +449,7 @@ class _SettingsPageState extends State<SettingsPage> {
   late final TextEditingController _backend;
   late final TextEditingController _printer;
   late final TextEditingController _port;
+  late int _fontSize;
   bool _saving = false;
 
   @override
@@ -314,6 +458,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _backend = TextEditingController(text: widget.settings.backendUrl);
     _printer = TextEditingController(text: widget.settings.printerIp);
     _port = TextEditingController(text: '${widget.settings.printerPort}');
+    _fontSize = widget.settings.printFontSize;
   }
 
   @override
@@ -335,6 +480,7 @@ class _SettingsPageState extends State<SettingsPage> {
       backendUrl: _backend.text.trim(),
       printerIp: _printer.text.trim(),
       printerPort: port,
+      printFontSize: _fontSize,
     );
     await settings.save();
     if (!mounted) return;
@@ -376,9 +522,23 @@ class _SettingsPageState extends State<SettingsPage> {
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: 'Porta',
-              helperText: 'Print iD usa 9100 (ESC/POS). O cupom sai com letras tamanho 14.',
+              helperText: 'Print iD usa 9100 (ESC/POS).',
               border: OutlineInputBorder(),
             ),
+          ),
+          const SizedBox(height: 20),
+          Text('Tamanho da fonte: $_fontSize', style: const TextStyle(fontWeight: FontWeight.w700)),
+          Slider(
+            value: _fontSize.toDouble(),
+            min: AppSettings.printFontSizeMin.toDouble(),
+            max: AppSettings.printFontSizeMax.toDouble(),
+            divisions: AppSettings.printFontSizeMax - AppSettings.printFontSizeMin,
+            label: '$_fontSize',
+            onChanged: (value) => setState(() => _fontSize = value.round()),
+          ),
+          const Text(
+            'Vale para os itens do cupom. O número da comanda sai sempre em letras grandes.',
+            style: TextStyle(color: Color(0xFF8C8C8C), fontSize: 12),
           ),
           const SizedBox(height: 24),
           FilledButton(

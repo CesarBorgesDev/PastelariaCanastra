@@ -16,12 +16,12 @@ class PrinterException implements Exception {
 
 /// Impressora Control iD Print iD, protocolo Epson ESC/POS na porta TCP 9100.
 class ControlIdPrinter {
-  ControlIdPrinter({required this.ip, required this.port});
+  ControlIdPrinter({required this.ip, required this.port, required this.fontSize});
 
   final String ip;
   final int port;
+  final double fontSize;
 
-  static const receiptFontSize = 14.0;
   static const paperWidth = 576;
 
   Future<void> printOrder(Order order) async {
@@ -48,11 +48,13 @@ class ControlIdPrinter {
   }
 
   Future<Uint8List> _receiptRaster(Order order) async {
+    final comandaSize = (fontSize * 3).clamp(36.0, 84.0);
     final lines = <_Line>[
       const _Line('PASTELARIA CANASTRA', bold: true, center: true),
       const _Line('Desde 1979', center: true),
       const _Line('--------------------------------'),
-      _Line('PEDIDO #${order.orderNumber}', bold: true, center: true),
+      const _Line('COMANDA', bold: true, center: true),
+      _Line('${order.orderNumber}', bold: true, center: true, size: comandaSize),
       _Line(order.barcode, center: true),
       const _Line('--------------------------------'),
     ];
@@ -99,14 +101,14 @@ class ControlIdPrinter {
   ui.Paragraph _paragraph(_Line line) {
     final builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
-        fontSize: receiptFontSize,
+        fontSize: line.size ?? fontSize,
         fontWeight: line.bold ? FontWeight.w700 : FontWeight.w400,
         textAlign: line.center ? TextAlign.center : TextAlign.left,
       ),
     )
       ..pushStyle(ui.TextStyle(
         color: const Color(0xFF000000),
-        fontSize: receiptFontSize,
+        fontSize: line.size ?? fontSize,
         fontWeight: line.bold ? FontWeight.w700 : FontWeight.w400,
       ))
       ..addText(line.text);
@@ -140,9 +142,10 @@ class ControlIdPrinter {
 }
 
 class _Line {
-  const _Line(this.text, {this.bold = false, this.center = false});
+  const _Line(this.text, {this.bold = false, this.center = false, this.size});
 
   final String text;
   final bool bold;
   final bool center;
+  final double? size;
 }
