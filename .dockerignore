@@ -2,7 +2,8 @@ node_modules
 dist
 .git
 backend
-deploy/vps.env
+.env
+deploy
 *.log
 .vscode
 .idea

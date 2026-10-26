@@ -1,15 +1,12 @@
-FROM node:22-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src ./src
+COPY app.py schema.sql ./
 
-ENV PORT=3000
 EXPOSE 3000
 
-USER node
-
-CMD ["node", "src/index.js"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "3000"]
