@@ -1,92 +1,192 @@
 [
   {
-    "id": "2d40ba80-6c86-4886-b863-22b5be04de6d",
-    "name": "Pastel de Carne",
-    "description": "Carne moída temperada",
-    "price": 12,
+    "id": "6040b627-995d-4c77-bbc3-3e1f972fd0b4",
+    "name": "Pastel Especial 3 Recheios",
+    "description": "Três recheios",
+    "price": 14.0,
     "category": "Pastéis Salgados",
-    "image_url": "/uploads/pastel-carne.jpg",
+    "image_url": "",
     "available": true,
-    "created_at": "2026-10-25T22:17:04.243892+00:00"
+    "created_at": "2026-10-26T20:10:50.952001+00:00"
   },
   {
-    "id": "d4cef9ca-d6a0-4193-87d1-8769922ac3b2",
-    "name": "Pastel de Queijo",
-    "description": "Mussarela derretida",
-    "price": 12,
-    "category": "Pastéis Salgados",
-    "image_url": "/uploads/pastel-queijo.jpg",
-    "available": true,
-    "created_at": "2026-10-25T22:17:04.379365+00:00"
-  },
-  {
-    "id": "6a1f7e97-746f-4fa4-a591-8989e829a8fd",
-    "name": "Pastel de Frango",
-    "description": "Frango desfiado com catupiry",
-    "price": 14,
-    "category": "Pastéis Salgados",
-    "image_url": "/uploads/pastel-frango.jpg",
-    "available": true,
-    "created_at": "2026-10-25T22:17:04.389604+00:00"
-  },
-  {
-    "id": "38d65bd4-c733-4e24-9714-a6fa1cebaa7f",
-    "name": "Pastel de Pizza",
-    "description": "Mussarela, presunto e orégano",
-    "price": 14,
-    "category": "Pastéis Salgados",
-    "image_url": "/uploads/pastel-pizza.jpg",
-    "available": true,
-    "created_at": "2026-10-25T22:17:04.396656+00:00"
-  },
-  {
-    "id": "174d3bea-5036-4632-b52a-6f4ac0db269e",
-    "name": "Pastel de Chocolate",
-    "description": "Chocolate ao leite",
-    "price": 11,
+    "id": "1ec7c676-7514-4453-b251-06231121a324",
+    "name": "Pastel Romeu e Julieta",
+    "description": "Goiabada com queijo",
+    "price": 11.0,
     "category": "Pastéis Doces",
-    "image_url": "/uploads/pastel-chocolate.jpg",
+    "image_url": "",
     "available": true,
-    "created_at": "2026-10-25T22:17:04.456855+00:00"
+    "created_at": "2026-10-26T20:10:51.065931+00:00"
+  },
+  {
+    "id": "588c1753-5279-4132-b8c0-1947a78e8dea",
+    "name": "Pastel de Bacalhau",
+    "description": "Bacalhau",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.784947+00:00"
   },
   {
     "id": "93b8b5e7-e1aa-49be-9fe3-d574db365f11",
     "name": "Pastel de Banana",
     "description": "Banana com canela",
-    "price": 11,
+    "price": 11.0,
     "category": "Pastéis Doces",
     "image_url": "/uploads/pastel-banana.jpg",
     "available": true,
     "created_at": "2026-10-25T22:17:04.508974+00:00"
   },
   {
-    "id": "bd056327-3e5c-4b1e-9ab7-074227369411",
-    "name": "Refrigerante lata",
-    "description": "350 ml",
-    "price": 6,
-    "category": "Bebidas",
-    "image_url": "/uploads/refrigerante.jpg",
+    "id": "30f9e095-b643-4695-9aef-524c92e5e5a9",
+    "name": "Pastel de Calabresa com Queijo",
+    "description": "Calabresa com queijo",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
     "available": true,
-    "created_at": "2026-10-25T22:17:04.542729+00:00"
+    "created_at": "2026-10-26T20:10:50.809317+00:00"
   },
   {
-    "id": "b87561c5-54b9-4930-b800-4f0e3f65a73e",
-    "name": "Suco natural",
-    "description": "300 ml",
-    "price": 8,
-    "category": "Bebidas",
-    "image_url": "/uploads/suco.jpg",
+    "id": "2d40ba80-6c86-4886-b863-22b5be04de6d",
+    "name": "Pastel de Carne",
+    "description": "Carne moída temperada",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "/uploads/pastel-carne.jpg",
     "available": true,
-    "created_at": "2026-10-25T22:17:04.554767+00:00"
+    "created_at": "2026-10-25T22:17:04.243892+00:00"
   },
   {
-    "id": "a367fffc-9361-47a9-8c12-aaafba9d4d49",
-    "name": "Catupiry extra",
-    "description": "Porção adicional",
-    "price": 3,
-    "category": "Adicionais",
-    "image_url": "/uploads/catupiry.jpg",
+    "id": "c107e75c-19ef-45c3-8b6e-b49af6638a72",
+    "name": "Pastel de Carne Seca",
+    "description": "Carne seca",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
     "available": true,
-    "created_at": "2026-10-25T22:17:04.584624+00:00"
+    "created_at": "2026-10-26T20:10:50.850489+00:00"
+  },
+  {
+    "id": "3157bad0-78c7-415f-927f-faf9e4945829",
+    "name": "Pastel de Carne e Queijo",
+    "description": "Carne com queijo",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.829514+00:00"
+  },
+  {
+    "id": "174d3bea-5036-4632-b52a-6f4ac0db269e",
+    "name": "Pastel de Chocolate",
+    "description": "Chocolate ao leite",
+    "price": 11.0,
+    "category": "Pastéis Doces",
+    "image_url": "/uploads/pastel-chocolate.jpg",
+    "available": true,
+    "created_at": "2026-10-25T22:17:04.456855+00:00"
+  },
+  {
+    "id": "0e1c13e3-c04b-49a8-8e46-0dd7cab18159",
+    "name": "Pastel de Chocolate com Banana",
+    "description": "Chocolate com banana",
+    "price": 11.0,
+    "category": "Pastéis Doces",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.998688+00:00"
+  },
+  {
+    "id": "e85a5828-067a-4ee0-8aa1-0aff3f2a9c23",
+    "name": "Pastel de Chocolate com Queijo",
+    "description": "Chocolate com queijo",
+    "price": 11.0,
+    "category": "Pastéis Doces",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:51.020019+00:00"
+  },
+  {
+    "id": "2d37f9ce-ad4b-432f-a4be-f3d6cecc7677",
+    "name": "Pastel de Doce de Leite",
+    "description": "Doce de leite",
+    "price": 11.0,
+    "category": "Pastéis Doces",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:51.042650+00:00"
+  },
+  {
+    "id": "6a1f7e97-746f-4fa4-a591-8989e829a8fd",
+    "name": "Pastel de Frango",
+    "description": "Frango desfiado com catupiry",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "/uploads/pastel-frango.jpg",
+    "available": true,
+    "created_at": "2026-10-25T22:17:04.389604+00:00"
+  },
+  {
+    "id": "b09b1dc9-4483-46b6-bb27-28f6c6e55f34",
+    "name": "Pastel de Frango com Palmito",
+    "description": "Frango com palmito",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.870534+00:00"
+  },
+  {
+    "id": "0e4f2722-4db2-4fe5-9692-cc64e31252e6",
+    "name": "Pastel de Frango com Requeijão",
+    "description": "Frango com requeijão",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.890919+00:00"
+  },
+  {
+    "id": "776f3c1e-58f1-4a07-8795-018e93a93b48",
+    "name": "Pastel de Palmito",
+    "description": "Palmito",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.911531+00:00"
+  },
+  {
+    "id": "4afee6f0-019e-41c3-8ca9-f6189a4f153f",
+    "name": "Pastel de Presunto e Mussarela",
+    "description": "Presunto e mussarela",
+    "price": 14.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.931485+00:00"
+  },
+  {
+    "id": "d4cef9ca-d6a0-4193-87d1-8769922ac3b2",
+    "name": "Pastel de Queijo",
+    "description": "Mussarela derretida",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "/uploads/pastel-queijo.jpg",
+    "available": true,
+    "created_at": "2026-10-25T22:17:04.379365+00:00"
+  },
+  {
+    "id": "0c531556-088a-4c84-8023-66e37713bf59",
+    "name": "Pastel sem Recheio",
+    "description": "Massa sem recheio",
+    "price": 12.0,
+    "category": "Pastéis Salgados",
+    "image_url": "",
+    "available": true,
+    "created_at": "2026-10-26T20:10:50.976861+00:00"
   }
 ]
