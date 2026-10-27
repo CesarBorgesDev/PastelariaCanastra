@@ -20,6 +20,7 @@ class AppSettings {
   bool get hasBackend => backendUrl.trim().isNotEmpty;
   bool get hasPrinter => printerIp.trim().isNotEmpty;
 
+  static const backendUrlDefault = 'http://127.0.0.1';
   static const printerPortDefault = 9100;
   static const printFontSizeDefault = 14;
   static const printFontSizeMin = 10;
@@ -37,8 +38,9 @@ class AppSettings {
     final fontSize = storedSize.clamp(printFontSizeMin, printFontSizeMax);
     final storedColumns = prefs.getInt('cards_per_row') ?? cardsPerRowDefault;
     final storedDescription = prefs.getInt('description_font_size') ?? descriptionFontSizeDefault;
+    final storedBackend = (prefs.getString('backend_url') ?? '').trim();
     return AppSettings(
-      backendUrl: prefs.getString('backend_url') ?? '',
+      backendUrl: storedBackend.isEmpty ? backendUrlDefault : storedBackend,
       printerIp: prefs.getString('printer_ip') ?? '',
       printerPort: prefs.getInt('printer_port') ?? printerPortDefault,
       printFontSize: fontSize,

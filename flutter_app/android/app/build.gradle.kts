@@ -14,6 +14,11 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+val releaseKeyAlias = keystoreProperties.getProperty("keyAlias")
+val releaseKeyPassword = keystoreProperties.getProperty("keyPassword")
+val releaseStorePassword = keystoreProperties.getProperty("storePassword")
+val releaseStoreFile = keystoreProperties.getProperty("storeFile")
+
 android {
     namespace = "br.com.pastelariacanastra.pastelaria_canastra"
     compileSdk = flutter.compileSdkVersion
@@ -40,17 +45,23 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
-            storePassword = keystoreProperties["storePassword"] as String
+        val alias = releaseKeyAlias?.takeIf { it.isNotBlank() }
+        val keyPass = releaseKeyPassword?.takeIf { it.isNotBlank() }
+        val storePass = releaseStorePassword?.takeIf { it.isNotBlank() }
+        val storePath = releaseStoreFile?.takeIf { it.isNotBlank() }
+        if (alias != null && keyPass != null && storePass != null && storePath != null) {
+            create("release") {
+                keyAlias = alias
+                keyPassword = keyPass
+                storeFile = file(storePath)
+                storePassword = storePass
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 }
