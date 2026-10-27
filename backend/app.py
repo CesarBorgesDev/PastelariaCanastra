@@ -4,7 +4,7 @@ import re
 import time
 import unicodedata
 from pathlib import Path
-from urllib.parse import quote_plus
+from urllib.parse import quote_plus, urlparse
 
 import psycopg
 from fastapi import FastAPI, HTTPException, Request
@@ -82,6 +82,72 @@ def map_product(row) -> dict:
         "available": bool(row["available"]),
         "created_date": created.isoformat() if hasattr(created, "isoformat") else created,
     }
+
+
+def _header_value(headers, name: str) -> str:
+    value = headers.get(name, "")
+    if value is None:
+        return ""
+    return str(value).split(",")[0].strip()
+
+
+def _host_with_port(host: str, scheme: str) -> str:
+    if host.startswith("["):
+        bracket = host.find("]")
+        if bracket == -1:
+            return host
+        name = host[: bracket + 1]
+        rest = host[bracket + 1 :]
+        port = rest[1:] if rest.startswith(":") else ""
+    elif host.count(":") == 1:
+        name, port = host.rsplit(":", 1)
+        if not port.isdigit():
+            return host
+    else:
+        return host
+    if not port.isdigit():
+        return host
+    if (scheme == "http" and port == "80") or (scheme == "https" and port == "443"):
+        return name
+    return host
+
+
+def public_origin(headers, scheme: str, netloc: str) -> str:
+    forwarded_scheme = _header_value(headers, "x-forwarded-proto").lower()
+    if forwarded_scheme not in {"http", "https"}:
+        forwarded_scheme = scheme if scheme in {"http", "https"} else "http"
+    host = _header_value(headers, "x-forwarded-host") or _header_value(headers, "host") or netloc
+    return f"{forwarded_scheme}://{_host_with_port(host, forwarded_scheme)}"
+
+
+def absolute_image_url(image_url: str, origin: str) -> str:
+    raw = image_url.strip() if isinstance(image_url, str) else ""
+    if not raw:
+        return ""
+    parsed = urlparse(raw)
+    query = f"?{parsed.query}" if parsed.query else ""
+    path = parsed.path or ""
+    on_uploads = path == "/uploads" or path.startswith("/uploads/")
+    if parsed.scheme in {"http", "https"} and parsed.netloc:
+        if on_uploads:
+            return f"{origin}{path}{query}"
+        return raw
+    if raw.startswith("//"):
+        if on_uploads:
+            return f"{origin}{path}{query}"
+        return raw
+    if not path.startswith("/"):
+        path = f"/{path}"
+    return f"{origin}{path}{query}"
+
+
+def present_product(product: dict, request: Request) -> dict:
+    shown = dict(product)
+    shown["image_url"] = absolute_image_url(
+        shown.get("image_url") or "",
+        public_origin(request.headers, request.url.scheme, request.url.netloc),
+    )
+    return shown
 
 
 def read_product(body: dict) -> dict:
@@ -195,7 +261,7 @@ def health():
 
 
 @app.get("/api/products")
-def list_products(available: str | None = None):
+def list_products(request: Request, available: str | None = None):
     available_only = available == "true"
     with connect() as conn:
         rows = conn.execute(
@@ -206,11 +272,11 @@ def list_products(available: str | None = None):
             """,
             (available_only,),
         ).fetchall()
-    return [map_product(row) for row in rows]
+    return [present_product(map_product(row), request) for row in rows]
 
 
 @app.post("/api/products", status_code=201)
-def create_product(body: dict):
+def create_product(body: dict, request: Request):
     payload = read_product(body)
     with connect() as conn:
         row = conn.execute(
@@ -229,11 +295,11 @@ def create_product(body: dict):
             ),
         ).fetchone()
         conn.commit()
-    return map_product(row)
+    return present_product(map_product(row), request)
 
 
 @app.patch("/api/products/{product_id}")
-def update_product(product_id: str, body: dict):
+def update_product(product_id: str, body: dict, request: Request):
     require_uuid(product_id)
     with connect() as conn:
         current = conn.execute("SELECT * FROM products WHERE id = %s", (product_id,)).fetchone()
@@ -260,7 +326,7 @@ def update_product(product_id: str, body: dict):
             ),
         ).fetchone()
         conn.commit()
-    return map_product(row)
+    return present_product(map_product(row), request)
 
 
 @app.delete("/api/products/{product_id}", status_code=204)
