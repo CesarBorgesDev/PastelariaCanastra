@@ -1,86 +1,27 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-class ProductImage extends StatefulWidget {
+class ProductImage extends StatelessWidget {
   const ProductImage({
     super.key,
     required this.url,
     required this.placeholder,
-    this.fallbackAsset,
   });
 
   final String url;
   final Widget placeholder;
-  final String? fallbackAsset;
-
-  @override
-  State<ProductImage> createState() => _ProductImageState();
-}
-
-class _ProductImageState extends State<ProductImage> {
-  static final Map<String, Uint8List> _cache = {};
-
-  Uint8List? _bytes;
-  bool _failed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  @override
-  void didUpdateWidget(ProductImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url) {
-      _bytes = null;
-      _failed = false;
-      _load();
-    }
-  }
-
-  Future<void> _load() async {
-    final cached = _cache[widget.url];
-    if (cached != null) {
-      if (mounted) setState(() => _bytes = cached);
-      return;
-    }
-    try {
-      final response = await http
-          .get(Uri.parse(widget.url), headers: const {'Accept': 'image/*,*/*'})
-          .timeout(const Duration(seconds: 20));
-      if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
-        throw Exception('Imagem indisponível');
-      }
-      _cache[widget.url] = response.bodyBytes;
-      if (!mounted) return;
-      setState(() => _bytes = response.bodyBytes);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _failed = true);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (_bytes != null) {
-      return Image.memory(
-        _bytes!,
-        fit: BoxFit.cover,
-        gaplessPlayback: true,
-        errorBuilder: (_, __, ___) => _fallback(),
-      );
-    }
-    if (_failed) return _fallback();
-    return const ColoredBox(color: Color(0xFF262626));
-  }
-
-  Widget _fallback() {
-    final asset = widget.fallbackAsset;
-    if (asset != null) return Image.asset(asset, fit: BoxFit.cover);
-    return widget.placeholder;
+    return Image.network(
+      url,
+      fit: BoxFit.cover,
+      gaplessPlayback: true,
+      errorBuilder: (_, __, ___) => placeholder,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return const ColoredBox(color: Color(0xFF262626));
+      },
+    );
   }
 }
 

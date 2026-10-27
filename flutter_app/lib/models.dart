@@ -24,7 +24,7 @@ class Product {
       description: '${json['description'] ?? ''}',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       category: '${json['category'] ?? ''}',
-      imageUrl: '${json['image_url'] ?? ''}',
+      imageUrl: '${json['image_url'] ?? json['imageUrl'] ?? ''}',
       available: json['available'] != false,
     );
   }

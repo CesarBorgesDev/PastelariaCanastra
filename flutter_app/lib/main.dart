@@ -425,43 +425,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  static const _productPhotos = {
-    'pastel de carne': 'assets/products/pastel-carne.jpg',
-    'pastel de queijo': 'assets/products/pastel-queijo.jpg',
-    'pastel de frango': 'assets/products/pastel-frango.jpg',
-    'pastel de pizza': 'assets/products/pastel-pizza.jpg',
-    'pastel de chocolate': 'assets/products/pastel-chocolate.jpg',
-    'pastel de banana': 'assets/products/pastel-banana.jpg',
-    'refrigerante lata': 'assets/products/refrigerante.jpg',
-    'suco natural': 'assets/products/suco.jpg',
-    'catupiry extra': 'assets/products/catupiry.jpg',
-  };
-
   Widget _productIcon(Product product) {
-    final asset = _productPhotos[_fold(product.name)];
     final url = resolveProductImageUrl(widget.settings.backendUrl, product.imageUrl);
-    if (url == null) {
-      if (asset != null) return Image.asset(asset, fit: BoxFit.cover);
-      return _emojiIcon(product);
-    }
-    return ProductImage(
-      url: url,
-      fallbackAsset: asset,
-      placeholder: _emojiIcon(product),
-    );
-  }
-
-  String _fold(String value) {
-    const from = 'áàâãäéèêëíìîïóòôõöúùûüç';
-    const to = 'aaaaaeeeeiiiiooooouuuuc';
-    final lower = value.toLowerCase().trim();
-    final buffer = StringBuffer();
-    for (final rune in lower.runes) {
-      final char = String.fromCharCode(rune);
-      final index = from.indexOf(char);
-      buffer.write(index >= 0 ? to[index] : char);
-    }
-    return buffer.toString();
+    if (url == null) return _emojiIcon(product);
+    return ProductImage(url: url, placeholder: _emojiIcon(product));
   }
 
   Widget _emojiIcon(Product product) {
