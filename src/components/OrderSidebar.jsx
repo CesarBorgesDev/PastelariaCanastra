@@ -99,7 +99,7 @@ export default function OrderSidebar({
   return (
     <div
       className={cn(
-        "flex flex-col bg-card border-l border-border h-full",
+        "flex flex-col bg-card border-l border-border h-full min-h-0",
         "w-full lg:w-[380px] lg:min-w-[380px]",
         "fixed lg:static inset-0 z-50 lg:z-auto transition-transform duration-300",
         isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
@@ -135,7 +135,7 @@ export default function OrderSidebar({
       </div>
 
       {/* Items */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+      <div className="menu-scroll flex-1 min-h-0 overflow-y-auto px-4 py-3 space-y-3">
         <AnimatePresence mode="popLayout">
           {cartItems.length === 0 ? (
             <motion.div

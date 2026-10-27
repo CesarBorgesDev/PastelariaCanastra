@@ -3,6 +3,7 @@ import { ScanBarcode, ArrowLeft, Minus, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { api } from "@/api/client";
+import { printOrder } from "@/lib/printOrder";
 import { useToast } from "@/components/ui/use-toast";
 import ScanModal from "../components/ScanModal";
 import PrintPreview from "../components/PrintPreview";
@@ -47,9 +48,16 @@ export default function OrderConfirm() {
       barcode: `CMD-${newOrderNumber}-${Date.now().toString().slice(-6)}`,
     };
     const created = await api.orders.create(orderData);
-    setLastOrder({ ...orderData, id: created.id });
+    const saved = { ...orderData, id: created.id };
+    setLastOrder(saved);
     setShowPrint(true);
     toast({ title: `Pedido #${newOrderNumber} criado!`, description: `Total: R$ ${total.toFixed(2)}` });
+    try {
+      await printOrder(saved);
+      toast({ title: "Cupom enviado para a impressora" });
+    } catch (error) {
+      toast({ title: "Pedido salvo, impressão não enviada", description: error.message, variant: "destructive" });
+    }
   };
 
   const handleScanConfirm = async () => {
@@ -58,7 +66,7 @@ export default function OrderConfirm() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-4 px-5 py-4 border-b border-border bg-card">
         <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center">
@@ -68,7 +76,7 @@ export default function OrderConfirm() {
       </div>
 
       {/* Items */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      <div className="menu-scroll flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3">
         {cartItems.length === 0 && (
           <p className="text-center text-muted-foreground font-inter py-12">Nenhum item no pedido</p>
         )}

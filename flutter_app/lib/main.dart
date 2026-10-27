@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'api.dart';
 import 'models.dart';
 import 'printer.dart';
+import 'product_image.dart';
 import 'settings_store.dart';
 
 void main() {
@@ -145,6 +146,12 @@ class _HomePageState extends State<HomePage> {
       } else {
         _cart.add(CartItem(product: product));
       }
+    });
+  }
+
+  void _clear(Product product) {
+    setState(() {
+      _cart.removeWhere((item) => item.product.id == product.id);
     });
   }
 
@@ -304,13 +311,21 @@ class _HomePageState extends State<HomePage> {
     }
     final products = _visible;
     if (products.isEmpty) return const Center(child: Text('Nenhum produto encontrado'));
+    final columns = widget.settings.cardsPerRow;
+    final descriptionSize = widget.settings.descriptionFontSize.toDouble();
+    final width = MediaQuery.sizeOf(context).width;
+    const padding = 12.0;
+    const spacing = 8.0;
+    final cardWidth = (width - padding * 2 - spacing * (columns - 1)) / columns;
+    final textHeight = 28 + (15 * 1.35 * 2) + (descriptionSize * 1.35 * 2) + 24;
+    final cardHeight = cardWidth * 0.72 + textHeight;
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.72,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+      padding: const EdgeInsets.all(padding),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        childAspectRatio: cardWidth / cardHeight,
+        crossAxisSpacing: spacing,
+        mainAxisSpacing: spacing,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -333,12 +348,12 @@ class _HomePageState extends State<HomePage> {
                   fit: StackFit.expand,
                   children: [
                     _productIcon(product),
-                    if (quantity > 0)
+                    if (quantity > 0) ...[
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: 6,
+                        left: 6,
                         child: Container(
-                          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                          constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           decoration: const BoxDecoration(
                             color: Color(0xFFE8591C),
@@ -351,19 +366,54 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => _clear(product),
+                          behavior: HitTestBehavior.opaque,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1A1A1A),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 1.5),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.close, size: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(product.name, maxLines: 2, style: const TextStyle(fontWeight: FontWeight.w700)),
+                      Text(
+                        product.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, height: 1.2),
+                      ),
                       const SizedBox(height: 4),
-                      Text(product.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF8C8C8C), fontSize: 12)),
-                      const SizedBox(height: 8),
-                      Text('R\$ ${product.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFFE8591C), fontWeight: FontWeight.w800)),
+                      Text(
+                        product.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: const Color(0xFF8C8C8C), fontSize: descriptionSize, height: 1.2),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'R\$ ${product.price.toStringAsFixed(2)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(color: Color(0xFFE8591C), fontWeight: FontWeight.w800, fontSize: 15),
+                      ),
                     ],
                   ),
                 ),
@@ -389,16 +439,16 @@ class _HomePageState extends State<HomePage> {
 
   Widget _productIcon(Product product) {
     final asset = _productPhotos[_fold(product.name)];
-    final url = _imageUrl(product);
-    if (url != null) {
-      return Image.network(
-        url,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => asset == null ? _emojiIcon(product) : Image.asset(asset, fit: BoxFit.cover),
-      );
+    final url = resolveProductImageUrl(widget.settings.backendUrl, product.imageUrl);
+    if (url == null) {
+      if (asset != null) return Image.asset(asset, fit: BoxFit.cover);
+      return _emojiIcon(product);
     }
-    if (asset != null) return Image.asset(asset, fit: BoxFit.cover);
-    return _emojiIcon(product);
+    return ProductImage(
+      url: url,
+      fallbackAsset: asset,
+      placeholder: _emojiIcon(product),
+    );
   }
 
   String _fold(String value) {
@@ -419,15 +469,6 @@ class _HomePageState extends State<HomePage> {
       color: const Color(0xFF262626),
       child: Center(child: Text(_emoji(product.category), style: const TextStyle(fontSize: 40))),
     );
-  }
-
-  String? _imageUrl(Product product) {
-    final raw = product.imageUrl.trim();
-    if (raw.isEmpty) return null;
-    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
-    final root = widget.settings.backendUrl.trim().replaceAll(RegExp(r'/+$'), '');
-    if (raw.startsWith('/')) return '$root$raw';
-    return '$root/$raw';
   }
 
   String _emoji(String category) {
@@ -476,6 +517,8 @@ class _SettingsPageState extends State<SettingsPage> {
   late final TextEditingController _printer;
   late final TextEditingController _port;
   late int _fontSize;
+  late int _cardsPerRow;
+  late int _descriptionFontSize;
   bool _saving = false;
 
   @override
@@ -485,6 +528,8 @@ class _SettingsPageState extends State<SettingsPage> {
     _printer = TextEditingController(text: widget.settings.printerIp);
     _port = TextEditingController(text: '${widget.settings.printerPort}');
     _fontSize = widget.settings.printFontSize;
+    _cardsPerRow = widget.settings.cardsPerRow;
+    _descriptionFontSize = widget.settings.descriptionFontSize;
   }
 
   @override
@@ -507,6 +552,8 @@ class _SettingsPageState extends State<SettingsPage> {
       printerIp: _printer.text.trim(),
       printerPort: port,
       printFontSize: _fontSize,
+      cardsPerRow: _cardsPerRow,
+      descriptionFontSize: _descriptionFontSize,
     );
     await settings.save();
     if (!mounted) return;
@@ -530,6 +577,27 @@ class _SettingsPageState extends State<SettingsPage> {
               hintText: 'http://192.168.0.10',
               border: OutlineInputBorder(),
             ),
+          ),
+          const SizedBox(height: 24),
+          const Text('Cardápio', style: TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 8),
+          Text('Produtos por linha: $_cardsPerRow', style: const TextStyle(fontWeight: FontWeight.w700)),
+          Slider(
+            value: _cardsPerRow.toDouble(),
+            min: AppSettings.cardsPerRowMin.toDouble(),
+            max: AppSettings.cardsPerRowMax.toDouble(),
+            divisions: AppSettings.cardsPerRowMax - AppSettings.cardsPerRowMin,
+            label: '$_cardsPerRow',
+            onChanged: (value) => setState(() => _cardsPerRow = value.round()),
+          ),
+          Text('Tamanho da descrição: $_descriptionFontSize', style: const TextStyle(fontWeight: FontWeight.w700)),
+          Slider(
+            value: _descriptionFontSize.toDouble(),
+            min: AppSettings.descriptionFontSizeMin.toDouble(),
+            max: AppSettings.descriptionFontSizeMax.toDouble(),
+            divisions: AppSettings.descriptionFontSizeMax - AppSettings.descriptionFontSizeMin,
+            label: '$_descriptionFontSize',
+            onChanged: (value) => setState(() => _descriptionFontSize = value.round()),
           ),
           const SizedBox(height: 24),
           const Text('Impressora Control iD', style: TextStyle(fontWeight: FontWeight.w700)),

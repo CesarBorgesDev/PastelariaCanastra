@@ -1,7 +1,7 @@
 import { Plus, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export default function ProductCard({ product, onAdd, onRemove, itemCount }) {
+export default function ProductCard({ product, onAdd, onRemove, itemCount, descriptionFontSize = 16 }) {
   const handleAdd = (e) => {
     e.stopPropagation();
     onAdd(product);
@@ -50,7 +50,10 @@ export default function ProductCard({ product, onAdd, onRemove, itemCount }) {
           {product.name}
         </h3>
         {product.description && (
-          <p className="font-inter text-xs text-muted-foreground mt-1 line-clamp-1">
+          <p
+            className="font-inter text-muted-foreground mt-1 line-clamp-2 leading-snug"
+            style={{ fontSize: `${descriptionFontSize}px` }}
+          >
             {product.description}
           </p>
         )}

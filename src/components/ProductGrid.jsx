@@ -1,6 +1,6 @@
 import ProductCard from "./ProductCard";
 
-export default function ProductGrid({ products, onAddItem, onRemoveItem, cartItems }) {
+export default function ProductGrid({ products, onAddItem, onRemoveItem, cartItems, cardsPerRow = 5, descriptionFontSize = 16 }) {
   const getItemCount = (productId) => {
     const item = cartItems.find((i) => i.product.id === productId);
     return item ? item.quantity : 0;
@@ -15,8 +15,11 @@ export default function ProductGrid({ products, onAddItem, onRemoveItem, cartIte
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="menu-scroll h-full min-h-0 overflow-y-auto px-4 py-4 sm:px-6">
+      <div
+        className="grid gap-4"
+        style={{ gridTemplateColumns: `repeat(${cardsPerRow}, minmax(0, 1fr))` }}
+      >
         {products.map((product) => (
           <ProductCard
             key={product.id}
@@ -24,6 +27,7 @@ export default function ProductGrid({ products, onAddItem, onRemoveItem, cartIte
             onAdd={onAddItem}
             onRemove={onRemoveItem}
             itemCount={getItemCount(product.id)}
+            descriptionFontSize={descriptionFontSize}
           />
         ))}
       </div>

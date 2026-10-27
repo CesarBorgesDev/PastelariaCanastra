@@ -5,7 +5,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py schema.sql ./
+COPY app.py schema.sql printer.py ./
 
 EXPOSE 3000
 

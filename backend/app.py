@@ -14,6 +14,8 @@ from fastapi.staticfiles import StaticFiles
 from psycopg.rows import dict_row
 from psycopg.types.json import Json
 
+from printer import build_receipt, send_to_printer
+
 CATEGORIES = ["Pastéis Salgados", "Pastéis Doces", "Bebidas", "Adicionais"]
 CATEGORY_HINTS = [
     ("salgad", "Pastéis Salgados"),
@@ -298,3 +300,63 @@ def create_order(body: dict):
         ).fetchone()
         conn.commit()
     return {"id": str(row["id"])}
+
+
+def _order_items(body: dict) -> tuple[int, list, float, str]:
+    order_number = body.get("order_number")
+    items = body.get("items")
+    barcode = body.get("barcode")
+    try:
+        total = float(body.get("total"))
+    except (TypeError, ValueError):
+        total = float("nan")
+    if isinstance(order_number, bool) or not isinstance(order_number, int):
+        raise HTTPException(status_code=400, detail="Pedido inválido")
+    if not isinstance(items, list) or not items or total != total or total < 0:
+        raise HTTPException(status_code=400, detail="Pedido inválido")
+    if not isinstance(barcode, str) or not barcode.strip():
+        raise HTTPException(status_code=400, detail="Pedido inválido")
+    normalized = []
+    for item in items:
+        if not isinstance(item, dict):
+            raise HTTPException(status_code=400, detail="Pedido inválido")
+        try:
+            quantity = int(item.get("quantity"))
+            unit_price = float(item.get("unit_price"))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="Pedido inválido") from None
+        name = item.get("product_name")
+        if isinstance(quantity, bool) or quantity < 1 or unit_price != unit_price or unit_price < 0:
+            raise HTTPException(status_code=400, detail="Pedido inválido")
+        if not isinstance(name, str) or not name.strip():
+            raise HTTPException(status_code=400, detail="Pedido inválido")
+        notes = item.get("notes") if isinstance(item.get("notes"), str) else ""
+        normalized.append({
+            "product_name": name.strip(),
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "notes": notes,
+        })
+    return order_number, normalized, total, barcode.strip()
+
+
+@app.post("/api/print", status_code=204)
+def print_order(body: dict):
+    order_number, items, total, barcode = _order_items(body)
+    printer_ip = body.get("printer_ip")
+    printer_port = body.get("printer_port", 9100)
+    font_size = body.get("font_size", 14)
+    if not isinstance(printer_ip, str) or not printer_ip.strip():
+        raise HTTPException(status_code=400, detail="Informe o IP da impressora")
+    if isinstance(printer_port, bool) or not isinstance(printer_port, int):
+        raise HTTPException(status_code=400, detail="Porta da impressora inválida")
+    if isinstance(font_size, bool) or not isinstance(font_size, int):
+        raise HTTPException(status_code=400, detail="Tamanho da fonte inválido")
+    try:
+        payload = build_receipt(order_number, items, total, barcode, font_size)
+        send_to_printer(printer_ip, printer_port, payload)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
+    except OSError as error:
+        raise HTTPException(status_code=502, detail=str(error)) from error
+    return Response(status_code=204)

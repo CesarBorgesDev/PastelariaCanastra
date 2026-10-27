@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "@/api/client";
 import { useToast } from "@/components/ui/use-toast";
+import { loadSettings } from "@/lib/settings";
+import { printOrder } from "@/lib/printOrder";
 import Header from "../components/Header";
+import SettingsDialog from "../components/SettingsDialog";
 import CategoryTabs from "../components/CategoryTabs";
 import ProductGrid from "../components/ProductGrid";
 import OrderSidebar from "../components/OrderSidebar";
@@ -24,6 +27,8 @@ export default function Home() {
   const [showPrint, setShowPrint] = useState(false);
   const [lastOrder, setLastOrder] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState(loadSettings);
   const [orderCounter, setOrderCounter] = useState(
     Math.floor(Math.random() * 900) + 100
   );
@@ -127,14 +132,20 @@ export default function Home() {
     };
 
     const created = await api.orders.create(orderData);
-    setLastOrder({ ...orderData, id: created.id });
+    const saved = { ...orderData, id: created.id };
+    setLastOrder(saved);
     setShowPrint(true);
     setCartItems([]);
-
     toast({
       title: "Pedido #" + newOrderNumber + " criado!",
       description: `Total: R$ ${total.toFixed(2)}`,
     });
+    try {
+      await printOrder(saved);
+      toast({ title: "Cupom enviado para a impressora" });
+    } catch (error) {
+      toast({ title: "Pedido salvo, impressão não enviada", description: error.message, variant: "destructive" });
+    }
   };
 
   const handleScanConfirm = async () => {
@@ -160,21 +171,24 @@ export default function Home() {
         total={total}
         onOpenCart={() => setSidebarOpen(true)}
         onOrder={finalizeOrder}
+        onOpenSettings={() => setShowSettings(true)}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Main content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <CategoryTabs
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
-          <div className="flex-1 overflow-hidden pb-24 lg:pb-0">
+          <div className="flex-1 min-h-0 pb-24 lg:pb-0">
             <ProductGrid
               products={filteredProducts}
               onAddItem={addItem}
               onRemoveItem={decrement}
               cartItems={cartItems}
+              cardsPerRow={settings.cardsPerRow}
+              descriptionFontSize={settings.descriptionFontSize}
             />
           </div>
         </div>
@@ -220,6 +234,15 @@ export default function Home() {
         open={showPrint}
         onClose={() => setShowPrint(false)}
         order={lastOrder}
+      />
+
+      <SettingsDialog
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSaved={(next) => {
+          setSettings(next);
+          api.products.listAvailable().then(setProducts).catch(() => setProducts([]));
+        }}
       />
     </div>
   );

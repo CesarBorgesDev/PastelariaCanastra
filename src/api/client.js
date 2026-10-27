@@ -1,7 +1,12 @@
-const base = import.meta.env.VITE_API_URL || '';
+import { loadSettings } from "@/lib/settings";
+
+function apiBase() {
+  const configured = loadSettings().backendUrl.trim().replace(/\/+$/, "");
+  return configured || import.meta.env.VITE_API_URL || "";
+}
 
 async function request(path, options = {}) {
-  const response = await fetch(`${base}${path}`, {
+  const response = await fetch(`${apiBase()}${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -34,5 +39,6 @@ export const api = {
   },
   orders: {
     create: (body) => request('/api/orders', { method: 'POST', body: JSON.stringify(body) }),
+    print: (body) => request('/api/print', { method: 'POST', body: JSON.stringify(body) }),
   },
 };

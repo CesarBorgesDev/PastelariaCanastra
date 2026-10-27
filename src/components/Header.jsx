@@ -1,7 +1,7 @@
-import { Clock, User, ScanBarcode, ShoppingBag } from "lucide-react";
+import { Clock, User, ScanBarcode, ShoppingBag, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 
-export default function Header({ itemCount = 0, total = 0, onOpenCart, onOrder }) {
+export default function Header({ itemCount = 0, total = 0, onOpenCart, onOrder, onOpenSettings }) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -19,7 +19,15 @@ export default function Header({ itemCount = 0, total = 0, onOpenCart, onOrder }
         />
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6">
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="flex items-center justify-center bg-secondary border border-border text-foreground rounded-xl w-10 h-10 active:scale-95 transition-transform"
+          aria-label="Configuração"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
         <div className="flex items-center gap-2 text-muted-foreground">
           <Clock className="w-4 h-4" />
           <span className="font-inter text-sm font-medium tabular-nums">
