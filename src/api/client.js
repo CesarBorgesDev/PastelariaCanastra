@@ -37,8 +37,16 @@ export const api = {
     update: (id, body) => request(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
     remove: (id) => request(`/api/products/${id}`, { method: 'DELETE' }),
   },
+  attendants: {
+    list: () => request('/api/attendants'),
+    listActive: () => request('/api/attendants?active=true'),
+    create: (body) => request('/api/attendants', { method: 'POST', body: JSON.stringify(body) }),
+    update: (id, body) => request(`/api/attendants/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+    remove: (id) => request(`/api/attendants/${id}`, { method: 'DELETE' }),
+  },
   orders: {
     create: (body) => request('/api/orders', { method: 'POST', body: JSON.stringify(body) }),
+    summary: (range) => request(`/api/orders/summary?range=${encodeURIComponent(range)}`),
     print: (body) => request('/api/print', { method: 'POST', body: JSON.stringify(body) }),
   },
 };

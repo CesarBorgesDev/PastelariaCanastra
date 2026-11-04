@@ -53,8 +53,13 @@ class ControlIdPrinter {
       const _Line('PASTELARIA CANASTRA', bold: true, center: true),
       const _Line('Desde 1979', center: true),
       const _Line('--------------------------------'),
-      const _Line('COMANDA', bold: true, center: true),
-      _Line('${order.orderNumber}', bold: true, center: true, size: comandaSize),
+      if (order.isEstufa)
+        _Line('ESTUFA', bold: true, center: true, size: comandaSize)
+      else ...[
+        const _Line('COMANDA', bold: true, center: true),
+        _Line('${order.orderNumber}', bold: true, center: true, size: comandaSize),
+      ],
+      if (order.attendantName.trim().isNotEmpty) _Line(order.attendantName, bold: true, center: true),
       _Line(order.barcode, center: true),
       const _Line('--------------------------------'),
     ];

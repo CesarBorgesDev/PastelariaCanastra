@@ -19,6 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, ChevronLeft, ToggleLeft, ToggleRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AttendantsPanel from "@/components/AttendantsPanel";
+import OrdersDashboard from "@/components/OrdersDashboard";
 
 const CATEGORIES = ["Pastéis Salgados", "Pastéis Doces", "Bebidas", "Adicionais"];
 
@@ -124,16 +127,30 @@ export default function Admin() {
             <ChevronLeft className="w-5 h-5" />
             <span className="font-inter text-sm">PDV</span>
           </a>
-          <h1 className="font-inter font-bold text-xl text-foreground">Administração do Cardápio</h1>
+          <h1 className="font-inter font-bold text-xl text-foreground">Administração</h1>
         </div>
-        <Button onClick={openNew} className="bg-primary hover:bg-primary/90 gap-2">
-          <Plus className="w-4 h-4" />
-          Novo Produto
-        </Button>
       </div>
 
-      {/* Content */}
-      <div className="p-6 max-w-5xl mx-auto space-y-8">
+      <Tabs defaultValue="cardapio" className="p-6 max-w-5xl mx-auto">
+        <TabsList className="mb-6">
+          <TabsTrigger value="cardapio">Cardápio</TabsTrigger>
+          <TabsTrigger value="atendentes">Atendentes</TabsTrigger>
+          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="atendentes">
+          <AttendantsPanel />
+        </TabsContent>
+        <TabsContent value="pedidos">
+          <OrdersDashboard />
+        </TabsContent>
+        <TabsContent value="cardapio" className="space-y-8">
+        <div className="flex justify-end">
+          <Button onClick={openNew} className="bg-primary hover:bg-primary/90 gap-2">
+            <Plus className="w-4 h-4" />
+            Novo Produto
+          </Button>
+        </div>
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -204,7 +221,8 @@ export default function Admin() {
             </div>
           ))
         )}
-      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

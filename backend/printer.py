@@ -2,7 +2,15 @@ import ipaddress
 import socket
 
 
-def build_receipt(order_number: int, items: list, total: float, barcode: str, font_size: int) -> bytes:
+def build_receipt(
+    order_number,
+    items: list,
+    total: float,
+    barcode: str,
+    font_size: int,
+    attendant_name: str = "",
+    is_estufa: bool = False,
+) -> bytes:
     font_size = max(10, min(28, int(font_size)))
     scale = 1 if font_size < 16 else 2 if font_size < 24 else 3
     comanda_scale = min(8, scale * 3)
@@ -21,8 +29,13 @@ def build_receipt(order_number: int, items: list, total: float, barcode: str, fo
     chunks.append(line("PASTELARIA CANASTRA", bold=True, center=True))
     chunks.append(line("Desde 1979", center=True))
     chunks.append(line("--------------------------------", center=True, scale_value=1))
-    chunks.append(line("COMANDA", bold=True, center=True))
-    chunks.append(line(str(order_number), bold=True, center=True, scale_value=comanda_scale))
+    if is_estufa:
+        chunks.append(line("ESTUFA", bold=True, center=True, scale_value=comanda_scale))
+    else:
+        chunks.append(line("COMANDA", bold=True, center=True))
+        chunks.append(line(str(order_number), bold=True, center=True, scale_value=comanda_scale))
+    if attendant_name:
+        chunks.append(line(attendant_name, bold=True, center=True, scale_value=scale))
     chunks.append(line(barcode, center=True, scale_value=1))
     chunks.append(line("--------------------------------", center=True, scale_value=1))
     for item in items:

@@ -61,25 +61,50 @@ class OrderItem {
       };
 }
 
+class Attendant {
+  Attendant({required this.id, required this.name, required this.active});
+
+  final String id;
+  final String name;
+  final bool active;
+
+  factory Attendant.fromJson(Map<String, dynamic> json) {
+    return Attendant(
+      id: '${json['id']}',
+      name: '${json['name'] ?? ''}',
+      active: json['active'] != false,
+    );
+  }
+}
+
 class Order {
   Order({
     required this.orderNumber,
     required this.items,
     required this.total,
     required this.barcode,
+    required this.attendantId,
+    required this.attendantName,
+    this.isEstufa = false,
     this.id,
     this.status = 'pendente',
   });
 
-  final int orderNumber;
+  final int? orderNumber;
   final List<OrderItem> items;
   final double total;
   final String barcode;
+  final String attendantId;
+  final String attendantName;
+  final bool isEstufa;
   final String? id;
   final String status;
 
   Map<String, dynamic> toJson() => {
-        'order_number': orderNumber,
+        'order_number': isEstufa ? null : orderNumber,
+        'is_estufa': isEstufa,
+        'attendant_id': attendantId,
+        'attendant_name': attendantName,
         'items': items.map((item) => item.toJson()).toList(),
         'total': total,
         'status': status,

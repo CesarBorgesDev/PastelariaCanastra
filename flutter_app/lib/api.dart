@@ -32,6 +32,16 @@ class PastelariaApi {
     return body.whereType<Map<String, dynamic>>().map(Product.fromJson).toList();
   }
 
+  Future<List<Attendant>> listAttendants() async {
+    final response = await http.get(_uri('/api/attendants?active=true'));
+    if (response.statusCode != 200) {
+      throw ApiException('Não foi possível carregar os atendentes (${response.statusCode}).');
+    }
+    final body = jsonDecode(response.body);
+    if (body is! List) throw ApiException('Resposta inválida do backend.');
+    return body.whereType<Map<String, dynamic>>().map(Attendant.fromJson).toList();
+  }
+
   Future<String> createOrder(Order order) async {
     final response = await http.post(
       _uri('/api/orders'),

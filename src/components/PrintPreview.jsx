@@ -21,7 +21,10 @@ export default function PrintPreview({ open, onClose, order }) {
           </div>
 
           <div className="text-center">
-            <p className="text-sm font-bold">PEDIDO #{order.order_number}</p>
+            <p className="text-sm font-bold">
+              {order.is_estufa ? "ESTUFA" : `COMANDA ${order.order_number}`}
+            </p>
+            {order.attendant_name && <p className="text-xs font-bold">{order.attendant_name}</p>}
             <p className="text-[10px]">{new Date().toLocaleString("pt-BR")}</p>
           </div>
 

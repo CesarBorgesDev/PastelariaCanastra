@@ -11,6 +11,8 @@ export async function printOrder(order) {
     printer_port: settings.printerPort,
     font_size: settings.printFontSize,
     order_number: order.order_number,
+    is_estufa: Boolean(order.is_estufa),
+    attendant_name: order.attendant_name || "",
     items: order.items,
     total: order.total,
     barcode: order.barcode,

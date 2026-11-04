@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'api.dart';
+import 'checkout.dart';
 import 'models.dart';
 import 'printer.dart';
 import 'product_image.dart';
@@ -168,51 +169,20 @@ class _HomePageState extends State<HomePage> {
     return _cart[index].quantity;
   }
 
-  Future<int?> _askComanda() {
-    final controller = TextEditingController();
-    return showDialog<int>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Fazer pedido'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Número da comanda',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-            FilledButton(
-              onPressed: () {
-                final number = int.tryParse(controller.text.trim());
-                if (number == null || number <= 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Informe o número da comanda.')),
-                  );
-                  return;
-                }
-                Navigator.of(context).pop(number);
-              },
-              child: const Text('Confirmar'),
-            ),
-          ],
-        );
-      },
-    ).whenComplete(controller.dispose);
-  }
-
   Future<void> _finish() async {
     if (_cart.isEmpty) return;
+    if (!widget.settings.hasBackend) {
+      _message('Informe o endereço do backend.');
+      return;
+    }
     if (!widget.settings.hasPrinter) {
       _message('Informe o IP da impressora Control iD.');
       return;
     }
-    final number = await _askComanda();
-    if (number == null || !mounted) return;
+    final choice = await Navigator.of(context).push<CheckoutChoice>(
+      MaterialPageRoute(builder: (_) => CheckoutPage(api: PastelariaApi(widget.settings.backendUrl))),
+    );
+    if (choice == null || !mounted) return;
     final items = _cart
         .map((item) => OrderItem(
               productName: item.product.name,
@@ -221,17 +191,25 @@ class _HomePageState extends State<HomePage> {
               notes: item.notes,
             ))
         .toList();
+    final stamp = DateTime.now().millisecondsSinceEpoch.toString();
+    final suffix = stamp.substring(stamp.length > 6 ? stamp.length - 6 : 0);
     final order = Order(
-      orderNumber: number,
+      orderNumber: choice.orderNumber,
+      isEstufa: choice.isEstufa,
+      attendantId: choice.attendant.id,
+      attendantName: choice.attendant.name,
       items: items,
       total: _total,
-      barcode: 'CMD-$number-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+      barcode: choice.isEstufa ? 'ESTUFA-$suffix' : 'CMD-${choice.orderNumber}-$suffix',
     );
     try {
       final id = await PastelariaApi(widget.settings.backendUrl).createOrder(order);
       final saved = Order(
         id: id,
         orderNumber: order.orderNumber,
+        isEstufa: order.isEstufa,
+        attendantId: order.attendantId,
+        attendantName: order.attendantName,
         items: order.items,
         total: order.total,
         barcode: order.barcode,
@@ -243,7 +221,7 @@ class _HomePageState extends State<HomePage> {
       ).printOrder(saved);
       if (!mounted) return;
       setState(_cart.clear);
-      _message('Comanda $number impressa.');
+      _message(choice.isEstufa ? 'Pedido da estufa impresso.' : 'Comanda ${choice.orderNumber} impressa.');
     } catch (error) {
       _message('$error');
     }
